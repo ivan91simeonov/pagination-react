@@ -1,23 +1,39 @@
-import logo from './logo.svg';
 import './App.css';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import Post from './components/Post';
+import Pagination from './components/Pagination';
 
 function App() {
+  const [post, setPost] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage, setPostsPerPage] = useState(10);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const res = await axios.get('https://jsonplaceholder.typicode.com/posts');
+      setPost(res.data);
+      setLoading(false);
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Get current posts
+  const indexOfLastPosts = currentPage * postsPerPage;
+  const indexOfFirstPosts = indexOfLastPosts - postsPerPage;
+  const currentPosts = post.slice(indexOfFirstPosts, indexOfLastPosts);
+
+  // Change Page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container mb-5">
+      <h1 className="text-primary mb-3">My Blog</h1>
+      <Post post={currentPosts} loading={loading} />
+      <Pagination postPerPage={postsPerPage} totalPosts={post.length} paginate={paginate}/>
     </div>
   );
 }
